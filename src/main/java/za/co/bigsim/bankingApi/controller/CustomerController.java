@@ -1,20 +1,23 @@
 package za.co.bigsim.bankingApi.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import za.co.bigsim.bankingApi.entity.Account;
-import za.co.bigsim.bankingApi.entity.dto.AccountDto;
-import za.co.bigsim.bankingApi.entity.dto.AccountType;
+import za.co.bigsim.bankingApi.entity.dto.*;
 import za.co.bigsim.bankingApi.entity.User;
-import za.co.bigsim.bankingApi.entity.dto.UserDto;
 import za.co.bigsim.bankingApi.service.AccountService;
 import za.co.bigsim.bankingApi.service.TransactionService;
 import za.co.bigsim.bankingApi.service.UserService;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -40,15 +43,17 @@ public class CustomerController {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-       // User user = (User) authentication == null ? null :  authentication.getPrincipal();
+       org.springframework.security.core.userdetails.User principal =
+               (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
 
-        User user = userService.findUserByEmail("test@gmail.com");
+        User user = userService.findUserByEmail(principal.getUsername());
 
         UserDto userDto = userService.mapToUserDto(user);
         AccountDto account = accountService.findAccount(user);
-       // Optional<Account> account1 = accountService.findByAccountNumber("8888");
-       // account1.get().setUser();
+
         if (account == null){
+
+            // Create an dummy account for test purposes
             account = new AccountDto(0l,"999999","8888", BigDecimal.ONE,"SomeBank", AccountType.CURRENT, userDto);
             transactionService.debitAccount(BigDecimal.valueOf(9999l), account.getAccountNumber());
             transactionService.creditAccount(BigDecimal.valueOf(455l), account.getAccountNumber());
@@ -61,4 +66,55 @@ public class CustomerController {
         model.addAttribute("account", account);
         return "account";
     }
+
+    //Handle debit/credit into the account
+    @PostMapping("/account/transaction/{transactionType}")
+    //public ResponseEntity<Object>
+    public String debitAccount(@Valid @ModelAttribute("trxSlip") TrxSlip trxSlip,
+                                               BindingResult result,
+                                               Model model,  @PathVariable String transactionType){
+        if(TransactionType.DEBIT.name().equals(transactionType)){
+
+            //return new ResponseEntity<>(transactionService.debitAccount(trxSlip.getAmount(),trxSlip.getAccountNumber()),
+           //         HttpStatus.CREATED);
+            ResponseEntity responseEntity = (ResponseEntity)transactionService.debitAccount(trxSlip.getAmount(),trxSlip.getAccountNumber());
+
+            if (HttpStatus.OK == responseEntity.getStatusCode())
+                return "account";
+        }else if (TransactionType.CREDIT.name().equals(transactionType)){
+            ResponseEntity responseEntity = (ResponseEntity)transactionService.creditAccount(trxSlip.getAmount(),trxSlip.getAccountNumber());
+
+            if (HttpStatus.OK == responseEntity.getStatusCode())
+                return "account";
+
+        }
+        return "error";
+    }
+
+
+    //Get transaction by type
+    @GetMapping("/account/{accountNumber}/{type}")
+    public ResponseEntity<Object> getTransactionForType(@PathVariable String accountNumber,
+                                                        @PathVariable String transactionType){
+
+        List<TransactionDto> transactionDtoList = transactionService.findTransactionsByAccountNumberAndAccountType(accountNumber,transactionType);
+
+        if (!transactionDtoList.isEmpty()){
+            return new ResponseEntity<>(transactionDtoList,
+                    HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Invalid parameter supplied", HttpStatus.BAD_REQUEST);
+
+    }
+
+    @GetMapping("/deposit")
+    public String deposit(){
+        return "deposit";
+    }
+
+    @GetMapping("/credit")
+    public String credit(){
+        return "credit";
+    }
+
 }

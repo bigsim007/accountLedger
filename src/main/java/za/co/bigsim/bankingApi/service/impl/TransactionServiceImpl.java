@@ -3,6 +3,7 @@ package za.co.bigsim.bankingApi.service.impl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import za.co.bigsim.bankingApi.entity.Account;
 import za.co.bigsim.bankingApi.entity.Transaction;
 import za.co.bigsim.bankingApi.entity.dto.TransactionDto;
@@ -61,7 +62,7 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionDetails;
     }
 
-
+    @Transactional
     @Override
     public Object creditAccount(BigDecimal amount, String accountNumber) {
         Optional<Account> accountEntityOpt = accountService.findByAccountNumber(accountNumber);
@@ -93,6 +94,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     }
 
+    @Transactional
     @Override
     public Object debitAccount(BigDecimal amount, String accountNumber) {
         Optional<Account> accountEntityOpt = accountService.findByAccountNumber(accountNumber);

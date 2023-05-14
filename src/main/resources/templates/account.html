@@ -32,6 +32,8 @@
         <span>Account Number</span><span th:text="${account.accountNumber}"></span>
         <span>Branch Number</span><span th:text="${account.branchNumber}"></span>
         <span>Current Balance</span><span th:text="${account.currentBalance}"></span>
+        <span><a aria-current="page" th:href="@{/deposit}">Debit</a>
+            <a aria-current="page" th:href="@{/credit}">Credit</a></span>
     </div>
     <table class="table table-bordered table-hover">
         <thead class="table-dark">

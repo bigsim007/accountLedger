@@ -46,17 +46,9 @@ public class BankingApiApplication implements CommandLineRunner {
 		roleRepository.saveAll(roles);
 		UserDto user = new UserDto(null, "TestName", "Testsurname", "test@gmail.com", "password");
 		userService.saveUser(user);
-		AccountDto account = new AccountDto(0l,"999999","8888", BigDecimal.ONE,"SomeBank", AccountType.CURRENT, user);
+		AccountDto account = new AccountDto(0l,"999999","8888", BigDecimal.ZERO,"SomeBank", AccountType.CURRENT, user);
 		accountService.saveAccount(account);
 		transactionService.debitAccount(BigDecimal.valueOf(10000l), account.getAccountNumber());
-		transactionService.debitAccount(BigDecimal.valueOf(10000l), account.getAccountNumber());
-		transactionService.debitAccount(BigDecimal.valueOf(10000l), account.getAccountNumber());
-		transactionService.debitAccount(BigDecimal.valueOf(10000l), account.getAccountNumber());
-		transactionService.debitAccount(BigDecimal.valueOf(10000l), account.getAccountNumber());
-		transactionService.creditAccount(BigDecimal.valueOf(450l), account.getAccountNumber());
-		transactionService.creditAccount(BigDecimal.valueOf(450l), account.getAccountNumber());
-		transactionService.creditAccount(BigDecimal.valueOf(450l), account.getAccountNumber());
-		transactionService.creditAccount(BigDecimal.valueOf(450l), account.getAccountNumber());
 		transactionService.creditAccount(BigDecimal.valueOf(450l), account.getAccountNumber());
 
 
